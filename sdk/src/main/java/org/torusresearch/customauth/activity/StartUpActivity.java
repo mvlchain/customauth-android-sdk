@@ -2,6 +2,7 @@ package org.torusresearch.customauth.activity;
 
 import static androidx.browser.customtabs.CustomTabsService.ACTION_CUSTOM_TABS_CONNECTION;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -65,14 +66,9 @@ public class StartUpActivity extends AppCompatActivity {
         List<String> customTabsBrowsers = getCustomTabsBrowsers(allowedBrowsers);
 
         // Always open default browser in custom tabs if it is supported and whitelisted
-        if (customTabsBrowsers.contains(defaultBrowser)) {
+        if (customTabsBrowsers.contains(defaultBrowser) || preferCustomTabs && !customTabsBrowsers.isEmpty()) {
             CustomTabsIntent customTabs = new CustomTabsIntent.Builder().build();
-            customTabs.intent.setPackage(defaultBrowser);
-            customTabs.launchUrl(this, Uri.parse(data));
-        } else if (preferCustomTabs && !customTabsBrowsers.isEmpty()) {
-            CustomTabsIntent customTabs = new CustomTabsIntent.Builder().build();
-            customTabs.intent.setPackage(customTabsBrowsers.get(0));
-            customTabs.launchUrl(this, Uri.parse(data));
+            CustomTabs.openCustomTab(this, customTabs, Uri.parse(data), new WebViewFallback());
         } else if (allowedBrowsers == null || allowedBrowsers.contains(defaultBrowser)) {
             // No custom tabs, open externally in default browser (if allowed)
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(data)));
@@ -148,5 +144,13 @@ public class StartUpActivity extends AppCompatActivity {
         }
 
         return customTabsBrowsers;
+    }
+
+    private static class WebViewFallback implements CustomTabFallback {
+
+        @Override
+        public void openUri(Activity activity, Uri uri) {
+            activity.startActivity(new Intent(Intent.ACTION_VIEW, uri));
+        }
     }
 }

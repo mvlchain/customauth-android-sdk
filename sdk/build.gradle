@@ -35,9 +35,9 @@ android {
 
 dependencies {
     api 'org.torusresearch:fetch-node-details-java:1.0.10'
-    api 'org.torusresearch:torus-utils-java:1.0.13'
+    api 'org.torusresearch:torus-utils-java:1.0.12'
     api 'androidx.browser:browser:1.4.0'
-    api 'org.web3j:crypto:4.8.8-android'
+    api 'org.web3j:crypto:4.6.0-android'
     implementation 'com.auth0.android:jwtdecode:2.0.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
     implementation 'com.google.code.gson:gson:2.8.9'
