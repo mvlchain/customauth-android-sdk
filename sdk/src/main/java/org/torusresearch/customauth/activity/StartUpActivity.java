@@ -66,9 +66,10 @@ public class StartUpActivity extends AppCompatActivity {
         List<String> customTabsBrowsers = getCustomTabsBrowsers(allowedBrowsers);
 
         // Always open default browser in custom tabs if it is supported and whitelisted
-        if (customTabsBrowsers.contains(defaultBrowser) || preferCustomTabs && !customTabsBrowsers.isEmpty()) {
-            CustomTabsIntent customTabs = new CustomTabsIntent.Builder().build();
-            CustomTabs.openCustomTab(this, customTabs, Uri.parse(data), new WebViewFallback());
+        if (customTabsBrowsers.contains(defaultBrowser)) {
+            CustomTabs.openCustomTab(this, defaultBrowser, Uri.parse(data), new WebViewFallback());
+        } else if (preferCustomTabs && !customTabsBrowsers.isEmpty()) {
+            CustomTabs.openCustomTab(this, customTabsBrowsers.get(0), Uri.parse(data), new WebViewFallback());
         } else if (allowedBrowsers == null || allowedBrowsers.contains(defaultBrowser)) {
             // No custom tabs, open externally in default browser (if allowed)
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(data)));
