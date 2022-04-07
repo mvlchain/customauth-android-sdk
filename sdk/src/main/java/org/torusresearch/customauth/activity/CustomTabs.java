@@ -21,6 +21,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -28,11 +29,40 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.browser.customtabs.CustomTabsIntent;
 
+import org.torusresearch.customauth.BuildConfig;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class CustomTabs {
+
+    public static void openCustomTab(
+            @NonNull Activity activity,
+            @Nullable String targetPackage,
+            @NonNull Uri uri,
+            @Nullable CustomTabFallback fallback
+    ) {
+        String packageName = !TextUtils.isEmpty(targetPackage) ?
+                targetPackage : CustomTabsHelper.getPackageNameToUse(activity);
+
+        Log.d("torus>", "launch with package: " + packageName + ", uri: " + uri);
+
+        if (packageName != null) {
+            CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder().build();
+            customTabsIntent.intent.setPackage(targetPackage);
+            try {
+                customTabsIntent.launchUrl(activity, uri);
+            } catch (ActivityNotFoundException e) {
+                Log.d("torus>", "CustomTabsIntent could not find Activity for " + uri + " calling default CustomTabsIntent");
+                new CustomTabsIntent.Builder().build().launchUrl(activity, uri);
+            }
+        } else {
+            if (fallback != null) {
+                fallback.openUri(activity, uri);
+            }
+        }
+    }
 
     /**
      * Opens the URL on a Custom Tab if possible. Otherwise fallback to opening it on a WebView.
