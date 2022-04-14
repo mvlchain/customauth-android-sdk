@@ -22,7 +22,6 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,15 +45,12 @@ public class CustomTabs {
         String packageName = !TextUtils.isEmpty(targetPackage) ?
                 targetPackage : CustomTabsHelper.getPackageNameToUse(activity);
 
-        Log.d("torus>", "launch with package: " + packageName + ", uri: " + uri);
-
         if (packageName != null) {
             CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder().build();
             customTabsIntent.intent.setPackage(targetPackage);
             try {
                 customTabsIntent.launchUrl(activity, uri);
             } catch (ActivityNotFoundException e) {
-                Log.d("torus>", "CustomTabsIntent could not find Activity for " + uri + " calling default CustomTabsIntent");
                 new CustomTabsIntent.Builder().build().launchUrl(activity, uri);
             }
         } else {
@@ -84,12 +80,9 @@ public class CustomTabs {
                 openNonBrowserUriApi30(activity, uri) :
                 openNonBrowserUriBeforeApi30(activity, uri);
 
-        Log.d("torus", "launch on native: " + launched);
-
         if (!launched) {
             String packageName = CustomTabsHelper.getPackageNameToUse(activity);
             if (packageName != null) {
-                Log.d("torus", "launch with package: " + packageName);
                 customTabsIntent.intent.setPackage(packageName);
                 customTabsIntent.launchUrl(activity, uri);
             } else {
