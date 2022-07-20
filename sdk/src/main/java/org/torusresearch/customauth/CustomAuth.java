@@ -57,6 +57,34 @@ public class CustomAuth {
         this.nodeDetailManager.getNodeDetails().thenRun(() -> Log.d("result:torus:nodedetail", "Fetched Node Details"));
     }
 
+    /**
+     * This method will trigger login with the handler given by outer module from user.
+     * @param handler social login handler
+     * @param subVerifierDetails
+     * @return
+     */
+    public CompletableFuture<TorusLoginResponse> triggerLogin(ILoginHandler handler, SubVerifierDetails subVerifierDetails) {
+        return handler.handleLoginWindow(context, subVerifierDetails.getIsNewActivity(), subVerifierDetails.getPreferCustomTabs(), subVerifierDetails.getAllowedBrowsers())
+                .thenComposeAsync(loginWindowResponse -> handler.getUserInfo(loginWindowResponse).thenApply((userInfo) -> Pair.create(userInfo, loginWindowResponse)))
+                .thenComposeAsync(pair -> {
+                    TorusVerifierResponse userInfo = pair.first;
+                    LoginWindowResponse response = pair.second;
+                    HashMap<String, Object> verifierParams = new HashMap<>();
+                    verifierParams.put("verifier_id", userInfo.getVerifierId());
+                    return this.getTorusKey(subVerifierDetails.getVerifier(), userInfo.getVerifierId(), verifierParams, !Helpers.isEmpty(response.getIdToken()) ? response.getIdToken() : response.getAccessToken())
+                            .thenApply(torusKey -> Triplet.create(userInfo, response, torusKey));
+                }).thenApplyAsync(triplet -> {
+                    TorusVerifierResponse torusVerifierResponse = triplet.first;
+                    LoginWindowResponse loginWindowResponse = triplet.second;
+                    TorusKey torusKey = triplet.third;
+                    TorusVerifierUnionResponse response = new TorusVerifierUnionResponse(torusVerifierResponse.getEmail(), torusVerifierResponse.getName(), torusVerifierResponse.getProfileImage(),
+                            torusVerifierResponse.getVerifier(), torusVerifierResponse.getVerifierId(), torusVerifierResponse.getTypeOfLogin());
+                    response.setAccessToken(loginWindowResponse.getAccessToken());
+                    response.setIdToken(loginWindowResponse.getIdToken());
+                    return new TorusLoginResponse(response, torusKey.getPrivateKey(), torusKey.getPublicAddress());
+                });
+    }
+
     public CompletableFuture<TorusLoginResponse> triggerLogin(SubVerifierDetails subVerifierDetails) {
         ILoginHandler handler = HandlerFactory.createHandler(new CreateHandlerParams(subVerifierDetails.getClientId(), subVerifierDetails.getVerifier(),
                 this.customAuthArgs.getRedirectUri(), subVerifierDetails.getTypeOfLogin(), this.customAuthArgs.getBrowserRedirectUri(), subVerifierDetails.getJwtParams()));
