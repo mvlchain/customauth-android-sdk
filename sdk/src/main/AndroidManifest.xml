@@ -13,19 +13,7 @@
         <activity
             android:name=".activity.StartUpActivity"
             android:exported="true"
-            android:launchMode="singleTop">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="${torusRedirectHost}"
-                    android:pathPattern="/*"
-                    android:pathPrefix="${torusRedirectPathPrefix}"
-                    android:scheme="${torusRedirectScheme}" />
-            </intent-filter>
+            android:launchMode="singleTask">
         </activity>
     </application>
 
