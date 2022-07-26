@@ -60,8 +60,8 @@ public class CustomAuth {
     /**
      * This method will trigger login with the handler given by outer module from user.
      * @param handler social login handler
-     * @param subVerifierDetails
-     * @return
+     * @param subVerifierDetails verifier options.
+     * @return CompletableFuture that handles CustomAuth login
      */
     public CompletableFuture<TorusLoginResponse> triggerLogin(ILoginHandler handler, SubVerifierDetails subVerifierDetails) {
         return handler.handleLoginWindow(context, subVerifierDetails.getIsNewActivity(), subVerifierDetails.getPreferCustomTabs(), subVerifierDetails.getAllowedBrowsers())
@@ -88,25 +88,7 @@ public class CustomAuth {
     public CompletableFuture<TorusLoginResponse> triggerLogin(SubVerifierDetails subVerifierDetails) {
         ILoginHandler handler = HandlerFactory.createHandler(new CreateHandlerParams(subVerifierDetails.getClientId(), subVerifierDetails.getVerifier(),
                 this.customAuthArgs.getRedirectUri(), subVerifierDetails.getTypeOfLogin(), this.customAuthArgs.getBrowserRedirectUri(), subVerifierDetails.getJwtParams()));
-        return handler.handleLoginWindow(context, subVerifierDetails.getIsNewActivity(), subVerifierDetails.getPreferCustomTabs(), subVerifierDetails.getAllowedBrowsers())
-                .thenComposeAsync(loginWindowResponse -> handler.getUserInfo(loginWindowResponse).thenApply((userInfo) -> Pair.create(userInfo, loginWindowResponse)))
-                .thenComposeAsync(pair -> {
-                    TorusVerifierResponse userInfo = pair.first;
-                    LoginWindowResponse response = pair.second;
-                    HashMap<String, Object> verifierParams = new HashMap<>();
-                    verifierParams.put("verifier_id", userInfo.getVerifierId());
-                    return this.getTorusKey(subVerifierDetails.getVerifier(), userInfo.getVerifierId(), verifierParams, !Helpers.isEmpty(response.getIdToken()) ? response.getIdToken() : response.getAccessToken())
-                            .thenApply(torusKey -> Triplet.create(userInfo, response, torusKey));
-                }).thenApplyAsync(triplet -> {
-                    TorusVerifierResponse torusVerifierResponse = triplet.first;
-                    LoginWindowResponse loginWindowResponse = triplet.second;
-                    TorusKey torusKey = triplet.third;
-                    TorusVerifierUnionResponse response = new TorusVerifierUnionResponse(torusVerifierResponse.getEmail(), torusVerifierResponse.getName(), torusVerifierResponse.getProfileImage(),
-                            torusVerifierResponse.getVerifier(), torusVerifierResponse.getVerifierId(), torusVerifierResponse.getTypeOfLogin());
-                    response.setAccessToken(loginWindowResponse.getAccessToken());
-                    response.setIdToken(loginWindowResponse.getIdToken());
-                    return new TorusLoginResponse(response, torusKey.getPrivateKey(), torusKey.getPublicAddress());
-                });
+        return triggerLogin(handler, subVerifierDetails);
     }
 
     public CompletableFuture<TorusAggregateLoginResponse> triggerAggregateLogin(AggregateLoginParams aggregateLoginParams) {
