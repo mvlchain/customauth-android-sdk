@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    compileSdk 33
+    compileSdk 31
 
     defaultConfig {
         minSdk 24
@@ -29,7 +29,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    namespace 'org.torusresearch.customauth'
 }
 
 dependencies {
