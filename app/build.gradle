@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+    namespace "org.torusresearch.customauth.app"
     signingConfigs {
         release {
             storeFile file('/Users/torus/AndroidKey')
