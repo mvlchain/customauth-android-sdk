@@ -5,6 +5,7 @@ plugins {
 }
 
 android {
+    namespace "org.torusresearch.customauth"
     compileSdk 33
 
     defaultConfig {
